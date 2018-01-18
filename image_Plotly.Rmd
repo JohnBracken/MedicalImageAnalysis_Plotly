@@ -1,0 +1,51 @@
+---
+title: "Coursera Plotly Assignment"
+author: "JB"
+date: "January 8, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Medical Image Viewing in Plotly
+
+Plotly has a lot of great built-in features for looking at greyscale images,
+including medical images in non-DICOM formats.  These features include zooming,
+panning, region of interest selection and image intensity displays at specific
+pixel locations.  This code reads in a greyscale jpg image of a slice of a cone-beam
+computed tomography (cone beam CT) scan of someone's head.  The image was rotated
+and converted into an 8-bit image (256 greyscale intensity values from 0-255).  Regions
+of the image that have intensity 0 are completely dark, while regions at 255 intensity
+level (such as the skull bone), look white.  Everything in between is a different shade
+of gray.  It is also often useful to have a histogram of grayscale intensities from 
+the image as well, to show how many pixels in the image have each grayscale value.
+```{r image, message=FALSE, warning=FALSE}
+library(plotly)
+library(imager)
+set.seed(5150)
+image_data <- load.image("ConeBeam_CT_Head.jpg")
+dimensions <- dim(image_data)
+
+image_data <- as.matrix(image_data[,,1,1], nrow=444, ncol=355)
+image_data <-t(image_data)
+image_data <- apply(image_data,2,rev)
+image_data <- image_data*255
+image_display <-plot_ly(z=~image_data, type = "heatmap", colors  = 'Greys', 
+    reversescale = T)
+image_display
+```
+
+
+Code to produce a histogram of greyscale image intensities in Plotly.  There are a 
+large number of pixels with an intensity of either 0 or 255, and a mound-like 
+distribution of pixel intensities around the 100 level value.
+```{r image_histogram, warning=FALSE}
+hist_data <- as.vector(image_data)
+hist_display <- plot_ly(x=~hist_data, type = "histogram",
+    marker = list(color='limegreen')) %>% 
+layout(title= "Pixel Histogram", xaxis=list(title="Pixel Intensity"),
+    yaxis=list(title="Counts"))
+hist_display
+```
